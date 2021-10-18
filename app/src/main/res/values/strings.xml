@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">LessonOneRx</string>
+    <string name="fio_user_text">ФИО пользователя</string>
+    <string name="age_text_view">Возраст</string>
+    <string name="date_birth_text_view">Дата рождения</string>
+    <string name="city_user_string">Город пользователя</string>
+    <string name="save_title_botton_text">Сохранить</string>
+    <string name="error_snack_text">Error!</string>
+    <string name="title_registration_string">Регистрация</string>
+    <string name="enter_title_button">Войти</string>
+    <string name="forget_title_button">Забыли пароль</string>
+    <string name="login_title_view">Логин</string>
+    <string name="password_title_view">Пароль</string>
+    <string name="mail_text_view">E-mail</string>
+    <string name="regisration_title_view">Регистрация</string>
+    <string name="enter_title_action">Вход</string>
+    <string name="forget_title_action">Отправить пароль</string>
+    <string name="registration_title_action">Сохранить</string>
+    <string name="error_city_message">Fake city</string>
 </resources>
