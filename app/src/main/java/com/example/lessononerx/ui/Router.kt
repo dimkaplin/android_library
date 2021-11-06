@@ -1,4 +1,4 @@
-package com.example.lessononerx.domain
+package com.example.lessononerx.ui
 
 class Router {
 
