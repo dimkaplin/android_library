@@ -1,5 +1,6 @@
 package com.example.lessononerx.ui
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Paint
 import androidx.appcompat.app.AppCompatActivity
@@ -15,28 +16,44 @@ import com.example.lessononerx.domain.City
 import com.example.lessononerx.domain.UserProfile
 import com.example.lessononerx.domain.ViewState
 import com.example.lessononerx.impl.UserRoomStorageImpl
+import com.example.lessononerx.impl.utils.app
+import com.github.terrakok.cicerone.androidx.AppNavigator
 import com.google.android.material.snackbar.Snackbar
+import moxy.MvpAppCompatActivity
+import moxy.ktx.moxyPresenter
 import java.text.SimpleDateFormat
 
-class UserProfileActivity : AppCompatActivity(), UserProfileContract.View {
+class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
     private lateinit var binding: ActivityUserProfileBinding
     private lateinit var currentAction: ActionForm
-    private var presenter: UserProfileContract.Presenter = UserProfilePresenter(UserRoomStorageImpl())
+    //private var presenter: UserProfileContract.Presenter = UserProfilePresenter(UserRoomStorageImpl())
+    private val presenter by moxyPresenter {UserProfilePresenter(UserRoomStorageImpl(), app.router)}
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUserProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        presenter.onAttach(this)
+        //presenter.onAttach(this)
         initView()
     }
 
-    override fun onDestroy() {
+    /*override fun onDestroy() {
         presenter.onDetach()
         super.onDestroy()
-    }
+    }*/
 
     override fun showText(text: String) {
         Toast.makeText(applicationContext, text, Toast.LENGTH_LONG).show()
+    }
+
+    override fun exit() {
+        finish()
+    }
+
+    override fun openSecondScreen() {
+        /*val intent = Intent(this, ClubActivity::class.java)
+        intent.putExtra(ClubActivity.USER_NAME, binding.loginTextView.text.toString())*/
+        val intent = ClubActivity.createLaunchIntent(this, binding.loginTextView.text.toString())
+        startActivity(intent)
     }
 
     private fun initView() {
@@ -153,5 +170,19 @@ class UserProfileActivity : AppCompatActivity(), UserProfileContract.View {
         binding.passwordTextField.setVisibility(View.VISIBLE)
         binding.emailTextField.setVisibility(View.VISIBLE)
         binding.saveButton.setText(R.string.registration_title_action)
+    }
+
+    //cicerone init router
+    //private val navigator = AppNavigator(this, R.id.container)//original
+    private val navigator by lazy {AppNavigator(this, binding.root.id)}
+
+    override fun onResumeFragments() {
+        super.onResumeFragments()
+        app.navigatorHolder.setNavigator(navigator)
+    }
+
+    override fun onPause() {
+        app.navigatorHolder.removeNavigator()
+        super.onPause()
     }
 }
