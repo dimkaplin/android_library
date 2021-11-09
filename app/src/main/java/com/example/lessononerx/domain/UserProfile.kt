@@ -11,5 +11,6 @@ data class UserProfile(
     val photo: String,
     val login: String,
     val password: String,
-    val email: String
+    val email: String,
+    val id: String? = ""
 )

@@ -11,10 +11,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import com.example.lessononerx.R
 import com.example.lessononerx.databinding.ActivityUserProfileBinding
-import com.example.lessononerx.domain.ActionForm
-import com.example.lessononerx.domain.City
-import com.example.lessononerx.domain.UserProfile
-import com.example.lessononerx.domain.ViewState
+import com.example.lessononerx.domain.*
 import com.example.lessononerx.impl.UserRoomStorageImpl
 import com.example.lessononerx.impl.utils.app
 import com.github.terrakok.cicerone.androidx.AppNavigator
@@ -25,7 +22,8 @@ import java.text.SimpleDateFormat
 
 class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
     private lateinit var binding: ActivityUserProfileBinding
-    private lateinit var currentAction: ActionForm
+    private var currentAction: ActionForm = ActionForm.REGISTER
+    private val listUserProfile: UserStorage = UserRoomStorageImpl()
     //private var presenter: UserProfileContract.Presenter = UserProfilePresenter(UserRoomStorageImpl())
     private val presenter by moxyPresenter {UserProfilePresenter(UserRoomStorageImpl(), app.router)}
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +50,9 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
     override fun openSecondScreen() {
         /*val intent = Intent(this, ClubActivity::class.java)
         intent.putExtra(ClubActivity.USER_NAME, binding.loginTextView.text.toString())*/
-        val intent = ClubActivity.createLaunchIntent(this, binding.loginTextView.text.toString())
+        val intent = ClubActivity.createLaunchIntent(this, binding.loginTextView.text.toString(), getCurrentUser())
+        listUserProfile.saveUser(getCurrentUser())
+        //ClubActivity.getUserStorage().saveUser(getCurrentUser())
         startActivity(intent)
     }
 
@@ -105,6 +105,7 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
             }
             ViewState.SUCCESS -> {
                 binding.successImageView.isVisible = true
+
             }
         }
     }

@@ -17,4 +17,5 @@
     <string name="forget_title_action">Отправить пароль</string>
     <string name="registration_title_action">Сохранить</string>
     <string name="error_city_message">Fake city</string>
+    <string name="after_add_user_message">User was added</string>
 </resources>
