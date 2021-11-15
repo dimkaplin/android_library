@@ -5,17 +5,26 @@ import android.graphics.Color
 import android.graphics.Paint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.MainThread
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
+import com.example.lessononerx.App
 import com.example.lessononerx.R
+import com.example.lessononerx.app
 import com.example.lessononerx.databinding.ActivityUserProfileBinding
 import com.example.lessononerx.domain.*
 import com.example.lessononerx.impl.UserRoomStorageImpl
 import com.example.lessononerx.impl.utils.app
 import com.github.terrakok.cicerone.androidx.AppNavigator
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import moxy.MvpAppCompatActivity
 import moxy.ktx.moxyPresenter
 import java.text.SimpleDateFormat
@@ -24,6 +33,8 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
     private lateinit var binding: ActivityUserProfileBinding
     private var currentAction: ActionForm = ActionForm.REGISTER
     private val listUserProfile: UserStorage = UserRoomStorageImpl()
+    private lateinit var disposable: Disposable
+    private var countEvent = 0
     //private var presenter: UserProfileContract.Presenter = UserProfilePresenter(UserRoomStorageImpl())
     private val presenter by moxyPresenter {UserProfilePresenter(UserRoomStorageImpl(), app.router)}
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +43,17 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
         setContentView(binding.root)
         //presenter.onAttach(this)
         initView()
+        disposable = app.eventBus.get(MANUAL_COUNTER_BUS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+            countEvent = countEvent.inc()
+            showText("countEvent " + countEvent )
+        }
+        Handler(Looper.getMainLooper()).postDelayed(Runnable {
+            countEvent = countEvent.dec()
+            app.eventBus.post(AUTO_COUNTER_BUS, LoginEvent())
+            showText("delayed for countEvent " + countEvent )
+        }, 2000)
     }
 
     /*override fun onDestroy() {
@@ -54,6 +76,7 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
         listUserProfile.saveUser(getCurrentUser())
         //ClubActivity.getUserStorage().saveUser(getCurrentUser())
         startActivity(intent)
+        disposable.dispose()
     }
 
     private fun initView() {
@@ -143,6 +166,7 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
         binding.loginTextField.setVisibility(View.VISIBLE)
         binding.passwordTextField.setVisibility(View.VISIBLE)
         binding.saveButton.setText(R.string.enter_title_action)
+        app.eventBus.post(MANUAL_COUNTER_BUS, LoginEvent())
     }
 
     override fun setOnForgetUnderline() {
@@ -157,6 +181,7 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
         binding.passwordTextField.setVisibility(View.GONE)
         binding.emailTextField.setVisibility(View.VISIBLE)
         binding.saveButton.setText(R.string.forget_title_action)
+        app.eventBus.post(MANUAL_COUNTER_BUS, ForgetEvent())
     }
 
     override fun setOnRegistrationUnderline() {
@@ -171,6 +196,7 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
         binding.passwordTextField.setVisibility(View.VISIBLE)
         binding.emailTextField.setVisibility(View.VISIBLE)
         binding.saveButton.setText(R.string.registration_title_action)
+        app.eventBus.post(MANUAL_COUNTER_BUS, RegisterEvent())
     }
 
     //cicerone init router
