@@ -27,6 +27,11 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import moxy.MvpAppCompatActivity
 import moxy.ktx.moxyPresenter
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import java.nio.file.attribute.UserPrincipal
 import java.text.SimpleDateFormat
 
 class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
@@ -34,6 +39,9 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
     private var currentAction: ActionForm = ActionForm.REGISTER
     private val listUserProfile: UserStorage = UserRoomStorageImpl()
     private lateinit var disposable: Disposable
+
+    private var disposableReq: Disposable? = null
+
     private var countEvent = 0
     //private var presenter: UserProfileContract.Presenter = UserProfilePresenter(UserRoomStorageImpl())
     private val presenter by moxyPresenter {UserProfilePresenter(UserRoomStorageImpl(), app.router)}
@@ -49,11 +57,29 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
             countEvent = countEvent.inc()
             showText("countEvent " + countEvent )
         }
-        Handler(Looper.getMainLooper()).postDelayed(Runnable {
+        val postDelayed = Handler(Looper.getMainLooper()).postDelayed(Runnable {
             countEvent = countEvent.dec()
             app.eventBus.post(AUTO_COUNTER_BUS, LoginEvent())
-            showText("delayed for countEvent " + countEvent )
+            showText("delayed for countEvent " + countEvent)
         }, 2000)
+
+        disposableReq = app.serviceUsers.listUsers("user")
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { repos, thr -> showText("body" + repos.toString()) }
+            /*.enqueue(object : Callback<List<UserProfile>> {
+            override fun onResponse(
+                call: Call<List<UserProfile>>,
+                response: Response<List<UserProfile>>
+            ) {
+                showText("body" + response.body().toString())
+            }*/
+
+            /*override fun onFailure(call: Call<List<UserProfile>>, t: Throwable) {
+                showText("error" + t.message.toString())
+            }
+        }*/
+       //)
     }
 
     /*override fun onDestroy() {
@@ -77,6 +103,7 @@ class UserProfileActivity : MvpAppCompatActivity(), UserProfileContract.View {
         //ClubActivity.getUserStorage().saveUser(getCurrentUser())
         startActivity(intent)
         disposable.dispose()
+        disposableReq?.dispose()
     }
 
     private fun initView() {
